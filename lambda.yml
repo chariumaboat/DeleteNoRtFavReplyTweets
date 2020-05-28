@@ -1,0 +1,73 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+# Twitter API Key
+Parameters:
+  ConsumerKey:
+    Type: String
+    NoEcho: true
+  ConsumerSecret:
+    Type: String
+    NoEcho: true
+  AccessKey:
+    Type: String
+    NoEcho: true
+  AccessSecret:
+    Type: String
+    NoEcho: true
+Resources:
+# Lambda
+  Lambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code: code
+      Environment: 
+        Variables:
+          ConsumerKeyVar: !Ref ConsumerKey
+          ConsumerSecretVar: !Ref ConsumerSecret
+          AccessKeyVar: !Ref AccessKey
+          AccessSecretVar: !Ref AccessSecret
+      Description: NoRtFavReplyTweetDelete
+      FunctionName: NoRtFavReplyTweetDelete
+      Handler: noRtFavTweetDelete.lambda_handler
+      MemorySize: 128
+      Role: !Sub 
+        - arn:aws:iam::${AWS::AccountId}:role/${Domain}
+        -  { Domain: !Ref LambdaRole }
+      Runtime: python3.8
+      Timeout: 180
+  # CloudWatchEvents Rule
+  Rule:
+    Type: 'AWS::Events::Rule'
+    Properties:
+      Description: NoRtFavReplyTweetDeleteRule
+      Name: NoRtFavReplyTweetDeleteRule
+      ScheduleExpression: 'cron(0 17 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt Lambda.Arn
+          Id: lambda
+  # Lambda IAM Role
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: deleteTweetRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  # CloudWatchEvents Lambda excute enable
+  LambdaEvent:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref Lambda
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt Rule.Arn
