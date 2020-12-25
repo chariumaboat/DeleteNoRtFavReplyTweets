@@ -46,6 +46,7 @@ def lambda_handler(event, context):
     # Delete Tweet
     print("==========delete tweet==========")
     for deltw in perfectList:
+        print(deltw)
         try: 
             print(api.get_status(deltw).id,api.get_status(deltw).created_at,api.get_status(deltw).text)
             api.destroy_status(deltw)
