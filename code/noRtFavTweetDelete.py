@@ -19,14 +19,14 @@ noDeleteTweet = []
 def lambda_handler(event, context):
     # No Favorite No RT Tweet
     print("==========No Favorite No RT Tweet==========")
-    for tweet in tweepy.Cursor(api.user_timeline,exclude_replies = True).items():
+    for tweet in tweepy.Cursor(api.user_timeline,exclude_replies = True).items(200):
         if tweet.favorite_count == 0 and tweet.retweet_count == 0:
             print(tweet.id,tweet.created_at,tweet.text.replace('\n',''))
             noFavRtTweet.append(tweet.id)
 
     # Reply Tweet
     print("==========Reply Tweet==========")
-    for mentions in tweepy.Cursor(api.mentions_timeline).items():
+    for mentions in tweepy.Cursor(api.mentions_timeline).items(400):
         print(mentions.id,mentions.created_at,mentions.text.replace('\n',''))
         mentionTweet.append(mentions.in_reply_to_status_id)
 
@@ -46,5 +46,9 @@ def lambda_handler(event, context):
     # Delete Tweet
     print("==========delete tweet==========")
     for deltw in perfectList:
-        print(api.get_status(deltw).id,api.get_status(deltw).created_at,api.get_status(deltw).text)
-        api.destroy_status(deltw)
+        try: 
+            print(api.get_status(deltw).id,api.get_status(deltw).created_at,api.get_status(deltw).text)
+            api.destroy_status(deltw)
+        except Exception as e:
+            print("ゴミ屑エラー")
+            print(e)
