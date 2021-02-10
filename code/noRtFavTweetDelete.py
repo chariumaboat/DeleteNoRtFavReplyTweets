@@ -48,7 +48,6 @@ def lambda_handler(event, context):
     for deltw in perfectList:
         print(deltw)
         try: 
-            print(api.get_status(deltw).id,api.get_status(deltw).created_at,api.get_status(deltw).text)
             api.destroy_status(deltw)
         except Exception as e:
             print("ゴミ屑エラー")
