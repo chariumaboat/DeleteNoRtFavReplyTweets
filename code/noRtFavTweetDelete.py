@@ -50,5 +50,4 @@ def lambda_handler(event, context):
         try: 
             api.destroy_status(deltw)
         except Exception as e:
-            print("ゴミ屑エラー")
             print(e)
